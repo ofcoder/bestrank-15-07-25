@@ -12,7 +12,7 @@ use \Bitrix\Main\HttpApplication;
 
 GLOBAL $APPLICATION;
 Loc::loadMessages(__FILE__);
-$module_id = 'study.userrating';
+$module_id = 'ofcode.userrating';
 
 
 if (!Loader::includeModule($module_id))
@@ -23,7 +23,7 @@ if (!Loader::includeModule($module_id))
 //region Массив для вкладок
 $tabs[] = array(
     'DIV' => 'general',
-    'TAB' => Loc::getMessage('ST_UR_TAB_GENERAL_NAME'),
+    'TAB' => Loc::getMessage('OFCODE_USERRATING_TAB_GENERAL_NAME'),
     'TITLE' => Loc::getMessage('OFCODE_USERRATING_TAB_GENERAL_TITLE')
 );
 /**

@@ -1,6 +1,6 @@
 <?php
 
-$study_userrating_default_option = array(
+$ofcode_userrating_default_option = array(
     "isYouMultiselectbox"  =>  "1",
     "isYouPass"  =>  "123456",
     "isYouSelectbox"  =>  "ko",
