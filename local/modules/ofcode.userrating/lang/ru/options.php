@@ -1,0 +1,3 @@
+<?php
+$MESS['OFCODE_USERRATING_TAB_GENERAL_NAME']="Настройки";
+$MESS['OFCODE_USERRATING_TAB_GENERAL_TITLE']="Общие настройки";
