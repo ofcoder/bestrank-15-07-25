@@ -55,17 +55,22 @@
                 global $APPLICATION;
                 if ($this->isVersionD7()) {
                     ModuleManager::registerModule($this->MODULE_ID);
+                    
                 } else {
                     $APPLICATION->ThrowException(Loc::getMessage('OFCODE_USERRATING_INSTALL_ERROR_VERSION'));
+                    return false;
                 }
                 if (!$this->InstallEvents()){
                     $APPLICATION->ThrowException(Loc::getMessage('OFCODE_USERRATING_INSTALL_ERROR_EVENTS'));
+                    return false;
                 }
                 if (!$this->InstallDB()){
                     $APPLICATION->ThrowException(Loc::getMessage('OFCODE_USERRATING_INSTALL_ERROR_DB'));
+                    return false;
                 }
                 if (!$this->InstallFiles()){
                     $APPLICATION->ThrowException(Loc::getMessage('OFCODE_USERRATING_INSTALL_ERROR_FILES'));
+                    return false;
                 }
                 
                 $APPLICATION->includeAdminFile(
@@ -96,12 +101,15 @@
                 } elseif ($step == 2) {
                     if (!$this->UnInstallEvents()){
                         $APPLICATION->ThrowException(Loc::getMessage('OFCODE_USERRATING_UNINSTALL_ERROR_EVENTS'));
+                        return false;
                     }
                     if (!$this->UnInstallDB()){
                         $APPLICATION->ThrowException(Loc::getMessage('OFCODE_USERRATING_UNINSTALL_ERROR_DB'));
+                        return false;
                     }
                     if (!$this->UnInstallFiles()){
                         $APPLICATION->ThrowException(Loc::getMessage('OFCODE_USERRATING_UNINSTALL_ERROR_FILES'));
+                        return false;
                     }
                     
                     ModuleManager::unRegisterModule($this->MODULE_ID);
@@ -125,7 +133,7 @@
         {
             try {
                 
-                return false;
+                return true;
                 
             } catch (Exception $e) {
                 global $APPLICATION;
@@ -141,7 +149,7 @@
         {
             try {
                 
-                return false;
+                return true;
                 
             } catch (Exception $e) {
                 global $APPLICATION;
@@ -156,7 +164,7 @@
         {
             try {
                 
-                return false;
+                return true;
                 
             } catch (Exception $e) {
                 global $APPLICATION;
@@ -171,7 +179,7 @@
         {
             try {
                 
-                return false;
+                return true;
                 
             } catch (Exception $e) {
                 global $APPLICATION;
@@ -186,7 +194,7 @@
         {
             try {
                 
-                return false;
+                return true;
                 
             } catch (Exception $e) {
                 global $APPLICATION;
@@ -200,8 +208,13 @@
         function UnInstallDB()
         {
             try {
-                
-                return false;
+                if (Bitrix\Main\Config\Option::get( "askaron.settings", "UF_MODULE_USERRATING_NOT_DELETE") !== "1"
+                    && Bitrix\Main\Engine\CurrentUser::get()->getId() !== 1
+                )
+                {
+                    return false;
+                }
+                return true;
                 
             } catch (Exception $e) {
                 global $APPLICATION;
