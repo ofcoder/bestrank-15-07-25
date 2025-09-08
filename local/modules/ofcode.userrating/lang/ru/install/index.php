@@ -1,4 +1,5 @@
 <?php
+    defined('B_PROLOG_INCLUDED') || die;
     $MESS['OFCODE_USERRATING_MODULE_ID'] = 'ofcode.userrating';
     $MESS['OFCODE_USERRATING_MODULE_NAME'] = 'Рейтинг сотрудников';
     $MESS['OFCODE_USERRATING_MODULE_DESC'] = 'Модуль оценки сотрудника "Рейтинг сотрудников"';

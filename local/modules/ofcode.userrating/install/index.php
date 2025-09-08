@@ -1,5 +1,5 @@
 <?php
-    
+    defined('B_PROLOG_INCLUDED') || die;
     use Bitrix\Main\Loader;
     use Bitrix\Main\Localization\Loc;
     use Bitrix\Main\ModuleManager;
@@ -60,15 +60,15 @@
                     $APPLICATION->ThrowException(Loc::getMessage('OFCODE_USERRATING_INSTALL_ERROR_VERSION'));
                     return false;
                 }
-                if (!$this->InstallEvents()){
+                if (!$this->InstallEvents()) {
                     $APPLICATION->ThrowException(Loc::getMessage('OFCODE_USERRATING_INSTALL_ERROR_EVENTS'));
                     return false;
                 }
-                if (!$this->InstallDB()){
+                if (!$this->InstallDB()) {
                     $APPLICATION->ThrowException(Loc::getMessage('OFCODE_USERRATING_INSTALL_ERROR_DB'));
                     return false;
                 }
-                if (!$this->InstallFiles()){
+                if (!$this->InstallFiles()) {
                     $APPLICATION->ThrowException(Loc::getMessage('OFCODE_USERRATING_INSTALL_ERROR_FILES'));
                     return false;
                 }
@@ -84,7 +84,7 @@
                 
                 return false;
             }
-           
+            
         }
         
         //Удаление модуля
@@ -99,15 +99,15 @@
                         $this->getPath() . '/install/unstep1.php'
                     );
                 } elseif ($step == 2) {
-                    if (!$this->UnInstallEvents()){
+                    if (!$this->UnInstallEvents()) {
                         $APPLICATION->ThrowException(Loc::getMessage('OFCODE_USERRATING_UNINSTALL_ERROR_EVENTS'));
                         return false;
                     }
-                    if (!$this->UnInstallDB()){
+                    if (!$this->UnInstallDB()) {
                         $APPLICATION->ThrowException(Loc::getMessage('OFCODE_USERRATING_UNINSTALL_ERROR_DB'));
                         return false;
                     }
-                    if (!$this->UnInstallFiles()){
+                    if (!$this->UnInstallFiles()) {
                         $APPLICATION->ThrowException(Loc::getMessage('OFCODE_USERRATING_UNINSTALL_ERROR_FILES'));
                         return false;
                     }
@@ -208,10 +208,9 @@
         function UnInstallDB()
         {
             try {
-                if (Bitrix\Main\Config\Option::get( "askaron.settings", "UF_MODULE_USERRATING_NOT_DELETE") !== "1"
+                if (Bitrix\Main\Config\Option::get("askaron.settings", "UF_MODULE_USERRATING_NOT_DELETE") !== "1"
                     //&& Bitrix\Main\Engine\CurrentUser::get()->getId() !== 1
-                )
-                {
+                ) {
                     return false;
                 }
                 return true;
