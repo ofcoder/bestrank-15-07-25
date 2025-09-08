@@ -204,12 +204,12 @@
             }
         }
         
-        //Удаление данных из базе данных
+        //Удаление данных из базы данных
         function UnInstallDB()
         {
             try {
                 if (Bitrix\Main\Config\Option::get( "askaron.settings", "UF_MODULE_USERRATING_NOT_DELETE") !== "1"
-                    && Bitrix\Main\Engine\CurrentUser::get()->getId() !== 1
+                    //&& Bitrix\Main\Engine\CurrentUser::get()->getId() !== 1
                 )
                 {
                     return false;
