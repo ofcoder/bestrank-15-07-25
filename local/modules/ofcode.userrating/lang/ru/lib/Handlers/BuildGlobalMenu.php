@@ -1,0 +1,3 @@
+<?php
+    $MESS['OFCODE_USERRATING_GLOBAL_MENU_USER_RATING_TEXT'] = 'Рейтинг сотрудников';
+    $MESS['OFCODE_USERRATING_GLOBAL_MENU_USER_RATING_TITLE'] = 'Рейтинг сотрудников';

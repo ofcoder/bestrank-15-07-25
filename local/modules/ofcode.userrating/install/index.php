@@ -1,8 +1,12 @@
 <?php
     defined('B_PROLOG_INCLUDED') || die;
-    use Bitrix\Main\Loader;
-    use Bitrix\Main\Localization\Loc;
-    use Bitrix\Main\ModuleManager;
+    
+    use Bitrix\Main\Loader,
+        Bitrix\Main\Localization\Loc,
+        Bitrix\Main\Application,
+        Bitrix\Main\EventManager,
+        Bitrix\Main\IO,
+        Bitrix\Main\ModuleManager;
     
     
     class ofcode_userrating extends CModule
@@ -48,7 +52,7 @@
             return CheckVersion(ModuleManager::getVersion('main'), '20.00.00');
         }
         
-        //Устаовка модуля
+        //Установка модуля
         function DoInstall()
         {
             try {
@@ -60,18 +64,20 @@
                     $APPLICATION->ThrowException(Loc::getMessage('OFCODE_USERRATING_INSTALL_ERROR_VERSION'));
                     return false;
                 }
-                if (!$this->InstallEvents()) {
-                    $APPLICATION->ThrowException(Loc::getMessage('OFCODE_USERRATING_INSTALL_ERROR_EVENTS'));
-                    return false;
-                }
+                $this->InstallEvents();
+//                if (!$this->InstallEvents()) {
+//                    $APPLICATION->ThrowException(Loc::getMessage('OFCODE_USERRATING_INSTALL_ERROR_EVENTS'));
+//                    return false;
+//                }
                 if (!$this->InstallDB()) {
                     $APPLICATION->ThrowException(Loc::getMessage('OFCODE_USERRATING_INSTALL_ERROR_DB'));
                     return false;
                 }
-                if (!$this->InstallFiles()) {
-                    $APPLICATION->ThrowException(Loc::getMessage('OFCODE_USERRATING_INSTALL_ERROR_FILES'));
-                    return false;
-                }
+                $this->InstallFiles();
+//                if (!$this->InstallFiles()) {
+//                    $APPLICATION->ThrowException(Loc::getMessage('OFCODE_USERRATING_INSTALL_ERROR_FILES'));
+//                    return false;
+//                }
                 
                 $APPLICATION->includeAdminFile(
                     Loc::getMessage('OFCODE_USERRATING_INSTALL_TITLE'),
@@ -99,18 +105,20 @@
                         $this->getPath() . '/install/unstep1.php'
                     );
                 } elseif ($step == 2) {
-                    if (!$this->UnInstallEvents()) {
-                        $APPLICATION->ThrowException(Loc::getMessage('OFCODE_USERRATING_UNINSTALL_ERROR_EVENTS'));
-                        return false;
-                    }
+                    $this->UnInstallEvents();
+//                    if (!$this->UnInstallEvents()) {
+//                        $APPLICATION->ThrowException(Loc::getMessage('OFCODE_USERRATING_UNINSTALL_ERROR_EVENTS'));
+//                        return false;
+//                    }
                     if (!$this->UnInstallDB()) {
                         $APPLICATION->ThrowException(Loc::getMessage('OFCODE_USERRATING_UNINSTALL_ERROR_DB'));
                         return false;
                     }
-                    if (!$this->UnInstallFiles()) {
-                        $APPLICATION->ThrowException(Loc::getMessage('OFCODE_USERRATING_UNINSTALL_ERROR_FILES'));
-                        return false;
-                    }
+                    $this->UnInstallFiles();
+                    //if (!$this->UnInstallFiles()) {
+                       // $APPLICATION->ThrowException(Loc::getMessage('OFCODE_USERRATING_UNINSTALL_ERROR_FILES'));
+                        //return false;
+                    //}
                     
                     ModuleManager::unRegisterModule($this->MODULE_ID);
                     $APPLICATION->includeAdminFile(
@@ -132,7 +140,16 @@
         function InstallEvents()
         {
             try {
+                $eventManager = EventManager::getInstance();
                 
+                //Регистрация метода для расширения меню в администартивном разделе
+                $eventManager->registerEventHandler(
+                    "main",
+                    "OnBuildGlobalMenu",
+                    $this->MODULE_ID,
+                    "\Ofcode\UserRating\Handlers\BuildGlobalMenu",
+                    "addMenuItem"
+                );
                 return true;
                 
             } catch (Exception $e) {
@@ -148,6 +165,16 @@
         function UnInstallEvents()
         {
             try {
+                $eventManager = EventManager::getInstance();
+                
+                //Регистрация метода для расширения меню в администартивном разделе
+                $eventManager->unRegisterEventHandler(
+                    "main",
+                    "OnBuildGlobalMenu",
+                    $this->MODULE_ID,
+                    "\Ofcode\UserRating\Handlers\BuildGlobalMenu",
+                    "addMenuItem"
+                );
                 
                 return true;
                 
@@ -163,13 +190,34 @@
         function InstallFiles()
         {
             try {
+                global $APPLICATION;
+                $dirModuleAdmin = __DIR__ . '/admin/';
+                //$dirModuleAdmin = Application::getDocumentRoot() .  '/local/modules/ofcode.userrating/install/admin/';
+                $dir = new IO\Directory($dirModuleAdmin);
+                $dirAdmin = Application::getDocumentRoot() . '/bitrix/admin/';
+                if (!$dir->isExists() && $dir->getPermissions() < 644) {
+                    $APPLICATION->ThrowException('Дирректория ' . $dir->getName() . ' не существует или недостаточно прав');
+                    return false;
+                }
+                $files = $dir->getChildren();
+                foreach ($files as $file) {
+                    $filePath = $file->getPath();
+                    $fileObj = new IO\File($filePath);
+                    $fileName = $file->getName();
+                    if ($fileName == 'menu.php') {
+                        continue;
+                    }
+                    if ($fileObj->getPermissions() < 755) {
+                        $APPLICATION->ThrowException('файл ' . $file->getName() . ' недостаточно прав');
+                        return false;
+                    }
+                    \CopyDirFiles($dirModuleAdmin . $fileName, $dirAdmin . $fileName);
+                }
                 
                 return true;
                 
             } catch (Exception $e) {
-                global $APPLICATION;
                 $APPLICATION->ThrowException($e->getMessage());
-                
                 return false;
             }
         }
@@ -178,13 +226,33 @@
         function UnInstallFiles()
         {
             try {
+                global $APPLICATION;
+                $dirAdmin = Application::getDocumentRoot() . '/bitrix/admin/';
+                $dir = new IO\Directory($dirAdmin);
+                if ($dir->isExists() && $dir->getPermissions() < 600) {
+                    $APPLICATION->ThrowException('Директория ' . $dir->getName() . ' не существует или недостаточно прав');
+                    return false;
+                }
+                $files = $dir->getChildren();
+                foreach ($files as $file) {
+                    $filePath = $file->getPath();
+                    $fileObj = new IO\File($filePath);
+                    $fileName = $file->getName();
+                    preg_match('/ofcode_userrating/', $fileName, $finder);
+                    if (empty($finder)) {
+                        continue;
+                    }
+                    if ($fileObj->getPermissions() < 700) {
+                        $APPLICATION->ThrowException('файл ' . $fileName . ' недостаточно прав');
+                        return false;
+                    }
+                    IO\File::deleteFile($filePath);
+                }
                 
                 return true;
                 
             } catch (Exception $e) {
-                global $APPLICATION;
                 $APPLICATION->ThrowException($e->getMessage());
-                
                 return false;
             }
         }
@@ -193,9 +261,7 @@
         function InstallDB()
         {
             try {
-                
                 return true;
-                
             } catch (Exception $e) {
                 global $APPLICATION;
                 $APPLICATION->ThrowException($e->getMessage());
